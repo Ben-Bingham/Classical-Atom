@@ -189,14 +189,19 @@ int main() {
 
     VertexAttributeObject vao{ };
 
+    // TODO remove uv and normal
     VertexBufferObject vbo{ std::vector<float>{
         -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.5f,
-         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     1.0f, 0.0f
+        -0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+        -0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+         0.5f,  0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
     } };
 
     ElementBufferObject ebo{ std::vector<unsigned int>{
-        2, 1, 0
+        2, 1, 0,
+        5, 4, 3
     } };
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -248,7 +253,7 @@ int main() {
             solidShader.SetMat4("mvp", mvp);
 
             vao.Bind();
-            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
             rendererTarget.Unbind();
         }
