@@ -39,6 +39,7 @@ struct Spring {
     float k;
     float length;
     const float restLength;
+    float damp;
 
     PointMass* end1;
     PointMass* end2;
@@ -152,7 +153,7 @@ int main() {
     pointMasses.push_back(pm1);
     pointMasses.push_back(pm2);
 
-    Spring spring{ 0.5f, 2.5f, 7.5f, &pointMasses[0], &pointMasses[1] };
+    Spring spring{ 0.5f, 2.5f, 7.5f, 0.1f, &pointMasses[0], &pointMasses[1] };
 
     springs.push_back(spring);
 
@@ -274,8 +275,8 @@ int main() {
                 float springLength = glm::length(end1ToEnd2);
                 end1ToEnd2 = glm::normalize(end1ToEnd2);
 
-                glm::vec2 end1Accel = (-end1ToEnd2 * force) / spring.end1->mass;
-                glm::vec2 end2Accel = (end1ToEnd2 * force) / spring.end2->mass;
+                glm::vec2 end1Accel = (-end1ToEnd2 * force - spring.end1->velocity * spring.damp) / spring.end1->mass;
+                glm::vec2 end2Accel = ( end1ToEnd2 * force - spring.end2->velocity * spring.damp) / spring.end2->mass;
 
                 spring.end1->velocity += end1Accel * dt;
                 spring.end2->velocity += end2Accel * dt;
