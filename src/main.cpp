@@ -147,21 +147,53 @@ std::vector<PointMass> pointMasses;
 std::vector<Spring> springs;
 
 int main() {
-    PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
-    PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
-    PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
+    //PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
+    //PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
+    //PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
 
-    pointMasses.push_back(pm1);
-    pointMasses.push_back(pm2);
-    pointMasses.push_back(pm3);
+    //pointMasses.push_back(pm1);
+    //pointMasses.push_back(pm2);
+    //pointMasses.push_back(pm3);
 
-    Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &pointMasses[0], &pointMasses[1] };
-    Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
-    Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &pointMasses[0], &pointMasses[2] };
+    //Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &pointMasses[0], &pointMasses[1] };
+    //Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
+    //Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &pointMasses[0], &pointMasses[2] };
 
-    springs.push_back(spring1);
-    springs.push_back(spring2);
-    springs.push_back(spring3);
+    //springs.push_back(spring1);
+    //springs.push_back(spring2);
+    //springs.push_back(spring3);
+
+    int n = 4;
+    for (int x = 0; x < n * 2; x += 2) {
+        for (int y = 0; y < n * 2; y += 2) {
+            PointMass pm{ 10.0f, glm::vec3{ (float)x, (float)y, 0.0f }, glm::vec3{ 0.0f } };
+
+            pointMasses.push_back(pm);
+        }
+    }
+
+    for (int i = 0; i < pointMasses.size(); ++i) {
+        for (int j = 0; j < pointMasses.size(); ++j) {
+            if (i == j) continue;
+
+            int ix = i % n;
+            int iy = i / n;
+
+            std::cout << "i: " << i << ", ix: " << ix << ", iy: " << iy << std::endl;
+
+            int jx = j % n;
+            int jy = j / n;
+
+            if (glm::abs(ix - jx) > 1) continue;
+            if (glm::abs(iy - jy) > 1) continue;
+
+            Spring spring{ 0.5f, 2.5f, 2.0f, 0.1f, &pointMasses[i], &pointMasses[j] };
+            springs.push_back(spring);
+        }
+    }
+
+    //Spring spring{ 0.5f, 2.5f, 2.0f, 0.1f, &pointMasses[0], &pointMasses[pointMasses.size() - 1]};
+    //springs.push_back(spring);
 
     glfwSetErrorCallback(glfwErrorCallback);
 
@@ -411,9 +443,9 @@ int main() {
 
             int i = 0;
             for (auto& spring : springs) {
-                ImGui::DragFloat(std::string{ "Spring Constant##" + i }.c_str(), &spring.k, 0.1f, 0.1f, 100.0f);
-                ImGui::DragFloat(std::string{ "Rest Length##" + i }.c_str(), &spring.restLength, 0.1f, 0.1f, 100.0f);
-                ImGui::DragFloat(std::string{ "Damping Coefficient##" + i }.c_str(), &spring.damp, 0.1f, 0.1f, 100.0f);
+                ImGui::DragFloat((std::string{ "Spring Constant##" } + std::to_string(i)).c_str(), &spring.k, 0.1f, 0.1f, 100.0f);
+                ImGui::DragFloat((std::string{ "Rest Length##" } + std::to_string(i)).c_str(), &spring.restLength, 0.1f, 0.1f, 100.0f);
+                ImGui::DragFloat((std::string{ "Damping Coefficient##" } + std::to_string(i)).c_str(), &spring.damp, 0.1f, 0.1f, 100.0f);
                 ++i;
             }
 
