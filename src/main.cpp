@@ -37,6 +37,7 @@ struct PointMass {
 struct Spring {
     float k;
     float length;
+    const float restLength;
 
     PointMass* end1;
     PointMass* end2;
@@ -147,7 +148,7 @@ int main() {
     PointMass pm1{ 1.0f, glm::vec2{ 0.0f } };
     PointMass pm2{ 2.0f, glm::vec2{ 5.0f, 0.0f } };
 
-    Spring spring{ 3.0f, 5.0f, &pm1, &pm2 };
+    Spring spring{ 3.0f, 2.5f, 5.0f, &pm1, &pm2 };
 
     pointMasses.push_back(pm1);
     pointMasses.push_back(pm2);
@@ -249,6 +250,8 @@ int main() {
     bool mouseOverViewPort{ false };
     glm::ivec2 viewportOffset{ 0, 0 };
 
+    float dt = 1.0f / 60.0f;
+
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
 
@@ -261,7 +264,22 @@ int main() {
         {
             TimeScope physicsTimeScope{ &physicsTime };
 
+            for (auto& spring : springs) {
+                float deltaX = glm::abs(spring.length - spring.restLength);
 
+                float force = deltaX * spring.k;
+
+                std::cout << "Force: " << force << std::endl;
+
+                glm::vec2 end1ToEnd2 = spring.end1->position - spring.end2->position;
+                end1ToEnd2 = glm::normalize(end1ToEnd2);
+
+                glm::vec2 end1Accel = (end1ToEnd2 * force) / spring.end1->mass;
+                glm::vec2 end2Accel = (-end1ToEnd2 * force) / spring.end2->mass;
+
+                spring.end1->position += 0.5f * end1Accel * dt * dt;
+                spring.end2->position += 0.5f * end2Accel * dt * dt;
+            }
         }
 
         {
