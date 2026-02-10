@@ -149,13 +149,17 @@ std::vector<Spring> springs;
 int main() {
     PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
     PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
+    PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
 
     pointMasses.push_back(pm1);
     pointMasses.push_back(pm2);
+    pointMasses.push_back(pm3);
 
-    Spring spring{ 0.5f, 2.5f, 7.5f, 0.1f, &pointMasses[0], &pointMasses[1] };
+    Spring spring1{ 0.5f, 2.5f, 7.5f, 0.1f, &pointMasses[0], &pointMasses[1] };
+    Spring spring2{ 0.5f, 2.5f, 7.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
 
-    springs.push_back(spring);
+    springs.push_back(spring1);
+    springs.push_back(spring2);
 
     glfwSetErrorCallback(glfwErrorCallback);
 
