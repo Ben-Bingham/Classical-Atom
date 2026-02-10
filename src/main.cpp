@@ -140,13 +140,19 @@ void MoveCamera(Camera& camera, GLFWwindow* window, float dt, const glm::ivec2& 
 }
 
 std::vector<Rect> rects;
+std::vector<PointMass> pointMasses;
+std::vector<Spring> springs;
 
 int main() {
-    Rect r1{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.5f }, glm::vec3{ 1.0f, 0.0f, 0.0f } };
-    rects.push_back(r1);
+    PointMass pm1{ 1.0f, glm::vec2{ 0.0f } };
+    PointMass pm2{ 2.0f, glm::vec2{ 5.0f, 0.0f } };
 
-    Rect r2{ glm::vec2{ 2.0f, 1.0f }, glm::vec2{ 0.5f, 1.0f }, glm::vec3{ 1.0f, 0.0f, 0.0f } };
-    rects.push_back(r2);
+    Spring spring{ 3.0f, 5.0f, &pm1, &pm2 };
+
+    pointMasses.push_back(pm1);
+    pointMasses.push_back(pm2);
+
+    springs.push_back(spring);
 
     glfwSetErrorCallback(glfwErrorCallback);
 
