@@ -129,8 +129,11 @@ void MoveCamera(Camera& camera, GLFWwindow* window, float dt, const glm::ivec2& 
 std::vector<Rect> rects;
 
 int main() {
-    Rect r{ glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f) };
-    rects.push_back(r);
+    Rect r1{ glm::vec2{ 0.0f, 0.0f }, glm::vec2{ 1.0f, 0.5f }, glm::vec3{ 1.0f, 0.0f, 0.0f } };
+    rects.push_back(r1);
+
+    Rect r2{ glm::vec2{ 2.0f, 1.0f }, glm::vec2{ 0.5f, 1.0f }, glm::vec3{ 1.0f, 0.0f, 0.0f } };
+    rects.push_back(r2);
 
     glfwSetErrorCallback(glfwErrorCallback);
 
@@ -244,16 +247,21 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             solidShader.Bind();
-            solidShader.SetVec3("color", glm::vec3{ 1.0f, 0.0f, 0.0f });
+            
+            for (const auto& r : rects) {
+                solidShader.SetVec3("color", r.color);
 
-            glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)rendererTarget.GetSize().x / (float)rendererTarget.GetSize().y, camera.nearPlane, camera.farPlane);
-            transform.CalculateMatrix();
-            glm::mat4 mvp = projection * camera.View() * transform.matrix;
+                glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)rendererTarget.GetSize().x / (float)rendererTarget.GetSize().y, camera.nearPlane, camera.farPlane);
+                
+                Transform t{ glm::vec3{ r.center, 0.0f }, glm::vec3{ r.size, 0.0f } };
+                t.CalculateMatrix();
+                glm::mat4 mvp = projection * camera.View() * t.matrix;
 
-            solidShader.SetMat4("mvp", mvp);
+                solidShader.SetMat4("mvp", mvp);
 
-            vao.Bind();
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+                vao.Bind();
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            }
 
             rendererTarget.Unbind();
         }
