@@ -22,6 +22,13 @@
 
 using namespace RenderingUtilities;
 
+struct Rect {
+    glm::vec2 center;
+    glm::vec2 size;
+
+    glm::vec3 color;
+};
+
 void glfwErrorCallback(int error, const char* description) {
     std::cout << "ERROR: GLFW has thrown an error: " << std::endl;
     std::cout << description << std::endl;
@@ -119,7 +126,12 @@ void MoveCamera(Camera& camera, GLFWwindow* window, float dt, const glm::ivec2& 
     }
 }
 
+std::vector<Rect> rects;
+
 int main() {
+    Rect r{ glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.5f), glm::vec3(1.0f, 0.0f, 0.0f) };
+    rects.push_back(r);
+
     glfwSetErrorCallback(glfwErrorCallback);
 
     if (!glfwInit()) {
@@ -249,10 +261,6 @@ int main() {
         //ImGui::ShowMetricsWindow();
 
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-
-        // Keep track of this so that we can make these changes after the imgui frame is finished
-        size_t changedPointLightIndex{ 0 };
-        bool pointLightChanged{ false };
 
         glm::ivec2 newViewportSize{ };
 
