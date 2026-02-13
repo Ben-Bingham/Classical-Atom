@@ -388,11 +388,24 @@ int main() {
                 spring.length = springLength;
             }
 
-            int i = 0;
-            int j = 0;
-            for (auto& c1 : pointCharges) {
-                for (auto& c2 : pointCharges) {
+            std::vector<PointCharge*> chargedParticles{ };
+
+            for (auto& pc : pointCharges) {
+                chargedParticles.push_back(&pc);
+            }
+
+            for (auto& n : nucleons) {
+                if (n.charge == 0.0f) continue;
+
+                chargedParticles.push_back(&n);
+            }
+
+            for (int i = 0; i < chargedParticles.size(); ++i) {
+                for (int j = 0; j < chargedParticles.size(); ++j) {
                     if (i == j) continue;
+
+                    PointCharge& c1 = *chargedParticles[i];
+                    PointCharge& c2 = *chargedParticles[j];
 
                     float distance = glm::distance(c1.position, c2.position);
 
@@ -403,13 +416,45 @@ int main() {
                     glm::vec3 accel = (force * direction) / c1.mass;
 
                     c1.velocity += accel * dt;
-                    ++j;
                 }
-                ++i;
             }
 
             for (auto& c : pointCharges) {
                 c.position += c.velocity * dt;
+            }
+
+            for (int i = 0; i < nucleons.size(); ++i) {
+                for (int j = 0; j < nucleons.size(); ++j) {
+                    if (i == j) continue;
+
+                    PointCharge& n1 = nucleons[i];
+                    PointCharge& n2 = nucleons[j];
+
+                    float distance = glm::distance(n1.position, n2.position);
+
+                    // Using Yukawa Potential as an approximation:
+                    // U(r) = (e^(-r)) / r
+                    // -> F(r) = -(e^(-r) * r^(-1) + e^(-r) * r^(-2))
+
+                    // Where r is the distance between the nucleons
+
+                    // We then finally add 1 / r^(10) to the force to act as a repulsive core
+                    // here 10 is an arbitrary large number
+
+                    // F(r) = 1 / r^(10) -(e^(-r) * r^(-1) + e^(-r) * r^(-2))
+
+                    float force = 1 / glm::pow(distance, 10.0f) - (glm::exp(distance) / (distance * distance) + (glm::exp(distance)) / (distance));
+
+                    glm::vec3 direction = glm::normalize(n1.position - n2.position);
+
+                    glm::vec3 accel = (force * direction) / n1.mass;
+
+                    n1.velocity += accel * dt;
+                }
+            }
+
+            for (auto& n : nucleons) {
+                n.position += n.velocity * dt;
             }
         }
 
