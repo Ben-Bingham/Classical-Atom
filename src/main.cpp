@@ -403,16 +403,18 @@ int main() {
     bool mouseOverViewPort{ false };
     glm::ivec2 viewportOffset{ 0, 0 };
 
-    float dt = 1.0f / 60.0f;
-
     glEnable(GL_DEPTH_TEST);
 
     int newSceneProtonCount = 2;
     int newSceneNeutronCount = 2;
     int newSceneElectronCount = 1;
 
+    float timeMultiplier = 1.0f;
+
     while (!glfwWindowShouldClose(window)) {
         TimeScope frameTimeScope{ &frameTime };
+
+        float dt = frameTime.count() * timeMultiplier;
 
         glfwPollEvents();
 
@@ -611,6 +613,10 @@ int main() {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         { ImGui::Begin("Scene");
+            ImGui::DragFloat("Time Multiplier", &timeMultiplier, 0.001f, 0.0000f, 1000.0f);
+
+            ImGui::Separator();
+
             if (ImGui::Button("Clear")) ClearScene();
 
             ImGui::DragInt("Protons", &newSceneProtonCount, 0.1f, 0, 100);
