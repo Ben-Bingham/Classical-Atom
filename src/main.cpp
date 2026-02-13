@@ -39,6 +39,8 @@ struct PointCharge : PointMass {
     float charge;
 };
 
+struct Nucleon : PointCharge { };
+
 struct Spring {
     float k;
     float length;
@@ -150,14 +152,26 @@ std::vector<Rect> rects;
 std::vector<PointMass> pointMasses;
 std::vector<Spring> springs;
 std::vector<PointCharge> pointCharges;
+std::vector<Nucleon> nucleons;
 
 int main() {
-    // lightly charged particle orbitting heavily charged particle
-    PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }, 10.0f };
-    PointCharge pc2{ 1.0f, glm::vec3{ 2.0f, 2.0f, 2.0f }, glm::vec3{ 2.0f, 0.0f, 0.0f }, -1.0f };
+    // Alpha Particle
+    Nucleon p1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f }, 1.0f };
+    Nucleon p2{ 1.0f, glm::vec3{ 1.0f, 1.0f, 0.0f }, glm::vec3{ 0.0f }, 1.0f };
+    Nucleon n1{ 1.0f, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec3{ 0.0f }, 0.0f };
+    Nucleon n2{ 1.0f, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f }, 0.0f };
 
-    pointCharges.push_back(pc1);
-    pointCharges.push_back(pc2);
+    nucleons.push_back(p1);
+    nucleons.push_back(p2);
+    nucleons.push_back(n1);
+    nucleons.push_back(n2);
+
+    // lightly charged particle orbitting heavily charged particle
+    //PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }, 10.0f };
+    //PointCharge pc2{ 1.0f, glm::vec3{ 2.0f, 2.0f, 2.0f }, glm::vec3{ 2.0f, 0.0f, 0.0f }, -1.0f };
+
+    //pointCharges.push_back(pc1);
+    //pointCharges.push_back(pc2);
 
     // 3 point masses bound by springs
     //PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
@@ -451,6 +465,19 @@ int main() {
 
                 if (pc.charge > 0.0f) { color = glm::vec3{ 0.0f, 0.0f, 1.0f }; }
                 else { color = glm::vec3{ 1.0f, 0.0f, 0.0f }; }
+
+                Rect r{ t, color };
+                rects.push_back(r);
+            }
+
+            for (const auto& n : nucleons) {
+                Transform t{ n.position, glm::vec3{ 0.5f } };
+
+                glm::vec3 color;
+
+                if (n.charge == 0.0f) { color = glm::vec3{ 1.0f, 1.0f, 1.0f }; }
+                else if (n.charge > 0.0f) { color = glm::vec3{ 1.0f, 1.0f, 0.0f }; }
+                else { color = glm::vec3{ 1.0f, 0.0f, 1.0f }; }
 
                 Rect r{ t, color };
                 rects.push_back(r);
