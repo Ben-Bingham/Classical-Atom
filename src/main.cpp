@@ -153,7 +153,7 @@ std::vector<PointCharge> pointCharges;
 
 int main() {
     // lightly charged particle orbitting heavily charged particle
-    PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f }, 10.0f };
+    PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }, 10.0f };
     PointCharge pc2{ 1.0f, glm::vec3{ 2.0f, 2.0f, 2.0f }, glm::vec3{ 2.0f, 0.0f, 0.0f }, -1.0f };
 
     pointCharges.push_back(pc1);
@@ -372,6 +372,30 @@ int main() {
                 spring.end2->position += spring.end2->velocity * dt;
 
                 spring.length = springLength;
+            }
+
+            int i = 0;
+            int j = 0;
+            for (auto& c1 : pointCharges) {
+                for (auto& c2 : pointCharges) {
+                    if (i == j) continue;
+
+                    float distance = glm::distance(c1.position, c2.position);
+
+                    float force = (c1.charge * c2.charge) / (distance * distance);
+
+                    glm::vec3 direction = glm::normalize(c1.position - c2.position);
+
+                    glm::vec3 accel = (force * direction) / c1.mass;
+
+                    c1.velocity += accel * dt;
+                    ++j;
+                }
+                ++i;
+            }
+
+            for (auto& c : pointCharges) {
+                c.position += c.velocity * dt;
             }
         }
 
