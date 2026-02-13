@@ -409,6 +409,7 @@ int main() {
     glm::ivec2 viewportOffset{ 0, 0 };
 
     glEnable(GL_DEPTH_TEST);
+    glfwSwapInterval(1);
 
     const size_t physicsStateQueueSize = 4;
     std::array<PhysicsState, physicsStateQueueSize> physicsStateQueue;
@@ -629,6 +630,14 @@ int main() {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         { ImGui::Begin("Scene");
+            float frameRate = 1.0f / frameTime.count();
+            float physicsFrameRate = 1.0f / physicsTime.count();
+
+            ImGui::Text("Total Framerate: %10.2f", frameRate);
+            ImGui::Text("Physics Framerate: %10.2f", physicsFrameRate);
+
+            ImGui::Separator();
+
             ImGui::DragFloat("Time Multiplier", &timeMultiplier, 0.001f, 0.0000f, 1000.0f);
 
             ImGui::Separator();
