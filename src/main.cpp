@@ -35,6 +35,10 @@ struct PointMass {
     glm::vec3 velocity;
 };
 
+struct PointCharge : PointMass {
+    float charge;
+};
+
 struct Spring {
     float k;
     float length;
@@ -145,24 +149,34 @@ void MoveCamera(Camera& camera, GLFWwindow* window, float dt, const glm::ivec2& 
 std::vector<Rect> rects;
 std::vector<PointMass> pointMasses;
 std::vector<Spring> springs;
+std::vector<PointCharge> pointCharges;
 
 int main() {
-    PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
-    PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
-    PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
+    // lightly charged particle orbitting heavily charged particle
+    PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f }, 10.0f };
+    PointCharge pc2{ 1.0f, glm::vec3{ 2.0f, 2.0f, 2.0f }, glm::vec3{ 2.0f, 0.0f, 0.0f }, -1.0f };
 
-    pointMasses.push_back(pm1);
-    pointMasses.push_back(pm2);
-    pointMasses.push_back(pm3);
+    pointCharges.push_back(pc1);
+    pointCharges.push_back(pc2);
 
-    Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &pointMasses[0], &pointMasses[1] };
-    Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
-    Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &pointMasses[0], &pointMasses[2] };
+    // 3 point masses bound by springs
+    //PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
+    //PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
+    //PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
 
-    springs.push_back(spring1);
-    springs.push_back(spring2);
-    springs.push_back(spring3);
+    //pointMasses.push_back(pm1);
+    //pointMasses.push_back(pm2);
+    //pointMasses.push_back(pm3);
 
+    //Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &pointMasses[0], &pointMasses[1] };
+    //Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
+    //Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &pointMasses[0], &pointMasses[2] };
+
+    //springs.push_back(spring1);
+    //springs.push_back(spring2);
+    //springs.push_back(spring3);
+
+    // Web of point masses
     //int n = 4;
     //for (int x = 0; x < n * 2; x += 2) {
     //    for (int y = 0; y < n * 2; y += 2) {
@@ -403,6 +417,18 @@ int main() {
                 Transform t{ pm.position, glm::vec3{ 0.6f } };
 
                 Rect r{ t, glm::vec3{ 0.0f } };
+                rects.push_back(r);
+            }
+
+            for (const auto& pc : pointCharges) {
+                Transform t{ pc.position, glm::vec3{ 0.4f } };
+
+                glm::vec3 color;
+
+                if (pc.charge > 0.0f) { color = glm::vec3{ 0.0f, 0.0f, 1.0f }; }
+                else { color = glm::vec3{ 1.0f, 0.0f, 0.0f }; }
+
+                Rect r{ t, color };
                 rects.push_back(r);
             }
 
