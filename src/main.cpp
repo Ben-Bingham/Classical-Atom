@@ -20,6 +20,7 @@
 #include <utility/TimeScope.h>
 #include <utility/Transform.h>
 #include <glm/ext/quaternion_trigonometric.hpp>
+#include <thread>
 
 using namespace RenderingUtilities;
 
@@ -227,25 +228,25 @@ int main() {
     //PointCharge pc1{ 1.0f, glm::vec3{ 0.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, 0.0f }, 10.0f };
     //PointCharge pc2{ 1.0f, glm::vec3{ 2.0f, 2.0f, 2.0f }, glm::vec3{ 2.0f, 0.0f, 0.0f }, -1.0f };
 
-    //pointCharges.push_back(pc1);
-    //pointCharges.push_back(pc2);
+    //physicsState.pointCharges.push_back(pc1);
+    //physicsState.pointCharges.push_back(pc2);
 
     // 3 point masses bound by springs
     //PointMass pm1{ 10.0f, glm::vec3{ -4.5f, -2.0f, 1.0f }, glm::vec3{ 0.0f } };
     //PointMass pm2{ 2.0f, glm::vec3{ 5.5f, 1.0f, -3.0f }, glm::vec3{ 0.0f } };
     //PointMass pm3{ 4.0f, glm::vec3{ 3.0f, -5.0f, -6.0f }, glm::vec3{ 0.0f } };
 
-    //pointMasses.push_back(pm1);
-    //pointMasses.push_back(pm2);
-    //pointMasses.push_back(pm3);
+    //physicsState.pointMasses.push_back(pm1);
+    //physicsState.pointMasses.push_back(pm2);
+    //physicsState.pointMasses.push_back(pm3);
 
-    //Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &pointMasses[0], &pointMasses[1] };
-    //Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &pointMasses[1], &pointMasses[2] };
-    //Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &pointMasses[0], &pointMasses[2] };
+    //Spring spring1{ 0.5f, 2.5f, 5.0f, 0.1f, &physicsState.pointMasses[0], &physicsState.pointMasses[1] };
+    //Spring spring2{ 0.5f, 2.5f, 6.5f, 0.1f, &physicsState.pointMasses[1], &physicsState.pointMasses[2] };
+    //Spring spring3{ 0.5f, 2.5f, 3.5f, 0.1f, &physicsState.pointMasses[0], &physicsState.pointMasses[2] };
 
-    //springs.push_back(spring1);
-    //springs.push_back(spring2);
-    //springs.push_back(spring3);
+    //physicsState.springs.push_back(spring1);
+    //physicsState.springs.push_back(spring2);
+    //physicsState.springs.push_back(spring3);
 
     // Web of point masses
     //int n = 4;
@@ -422,21 +423,17 @@ int main() {
 
     float timeMultiplier = 1.0f;
 
-    while (!glfwWindowShouldClose(window)) {
-        TimeScope frameTimeScope{ &frameTime };
+    float dt = 1.0f / 1000.0f;
 
-        float dt = frameTime.count() * timeMultiplier;
+    bool closePhysicsThread = false;
 
-        glfwPollEvents();
-
-        glm::ivec2 mousePositionWRTViewport{ mousePosition.x - viewportOffset.x, lastFrameViewportSize.y - (viewportOffset.y - mousePosition.y) };
-
-        MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRTViewport, lastFrameViewportSize, mouseOverViewPort);
-
-        {
+    std::thread physicsThread{ [&]() {
+        while (!closePhysicsThread) {
             TimeScope physicsTimeScope{ &physicsTime };
 
-            for (auto& spring : physicsState.springs) {
+            PhysicsState state = physicsStateQueue[mostRecentPhysicsState];
+
+            for (auto& spring : state.springs) {
                 float deltaX = spring.length - spring.restLength;
 
                 float force = deltaX * spring.k;
@@ -446,7 +443,7 @@ int main() {
                 end1ToEnd2 = glm::normalize(end1ToEnd2);
 
                 glm::vec3 end1Accel = (-end1ToEnd2 * force - spring.end1->velocity * spring.damp) / spring.end1->mass;
-                glm::vec3 end2Accel = ( end1ToEnd2 * force - spring.end2->velocity * spring.damp) / spring.end2->mass;
+                glm::vec3 end2Accel = (end1ToEnd2 * force - spring.end2->velocity * spring.damp) / spring.end2->mass;
 
                 spring.end1->velocity += end1Accel * dt;
                 spring.end2->velocity += end2Accel * dt;
@@ -459,11 +456,11 @@ int main() {
 
             std::vector<PointCharge*> chargedParticles{ };
 
-            for (auto& pc : physicsState.pointCharges) {
+            for (auto& pc : state.pointCharges) {
                 chargedParticles.push_back(&pc);
             }
 
-            for (auto& n : physicsState.nucleons) {
+            for (auto& n : state.nucleons) {
                 if (n.charge == 0.0f) continue;
 
                 chargedParticles.push_back(&n);
@@ -488,16 +485,16 @@ int main() {
                 }
             }
 
-            for (auto& c : physicsState.pointCharges) {
+            for (auto& c : state.pointCharges) {
                 c.position += c.velocity * dt;
             }
 
-            for (int i = 0; i < physicsState.nucleons.size(); ++i) {
-                for (int j = 0; j < physicsState.nucleons.size(); ++j) {
+            for (int i = 0; i < state.nucleons.size(); ++i) {
+                for (int j = 0; j < state.nucleons.size(); ++j) {
                     if (i == j) continue;
 
-                    PointCharge& n1 = physicsState.nucleons[i];
-                    PointCharge& n2 = physicsState.nucleons[j];
+                    PointCharge& n1 = state.nucleons[i];
+                    PointCharge& n2 = state.nucleons[j];
 
                     float distance = glm::distance(n1.position, n2.position);
 
@@ -522,14 +519,26 @@ int main() {
                 }
             }
 
-            for (auto& n : physicsState.nucleons) {
+            for (auto& n : state.nucleons) {
                 n.position += n.velocity * dt;
             }
 
             ++mostRecentPhysicsState;
             mostRecentPhysicsState %= physicsStateQueueSize;
-            physicsStateQueue[mostRecentPhysicsState] = physicsState;
+            physicsStateQueue[mostRecentPhysicsState] = state;
+
+            dt = physicsTime.count() * timeMultiplier;
         }
+    } };
+
+    while (!glfwWindowShouldClose(window)) {
+        TimeScope frameTimeScope{ &frameTime };
+
+        glfwPollEvents();
+
+        glm::ivec2 mousePositionWRTViewport{ mousePosition.x - viewportOffset.x, lastFrameViewportSize.y - (viewportOffset.y - mousePosition.y) };
+
+        MoveCamera(camera, window, static_cast<float>(frameTime.count()), mousePositionWRTViewport, lastFrameViewportSize, mouseOverViewPort);
 
         {
             TimeScope renderingTimeScope{ &renderTime };
@@ -687,6 +696,9 @@ int main() {
 
         glfwSwapBuffers(window);
     }
+
+    closePhysicsThread = true;
+    physicsThread.join();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
